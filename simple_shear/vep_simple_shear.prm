@@ -1,0 +1,154 @@
+# This parameter file ....
+
+# Global parameters
+set Dimension                              = 2
+set Start time                             = 0
+set End time                               = 8
+set Use years in output instead of seconds = false
+set Resume computation                     = auto
+set CFL number                             = 1.0
+set Maximum time step                      = 0.025
+set Output directory                       = output_vep_0
+set Pressure normalization                 = surface
+set Surface pressure                       = 0.
+
+
+set Nonlinear solver scheme                = iterated Stokes
+set Max nonlinear iterations               = 30
+set Nonlinear solver tolerance             = 1e-5
+set Max nonlinear iterations in pre-refinement      = 0
+
+
+# Solver settings
+subsection Solver parameters
+  subsection Stokes solver parameters
+    set Number of cheap Stokes solver steps = 200
+    set Linear solver tolerance                         = 1e-5
+  end
+end
+
+subsection Discretization
+  #set Stokes velocity polynomial degree       = 1
+  #set Use locally conservative discretization     = true
+end
+
+#subsection Nullspace removal
+#  set Remove nullspace                        = linear x momentum
+#end
+
+subsection Geometry model
+  set Model name = box
+  subsection Box
+    set X extent  = 1.0
+    set Y extent  = 1.0
+    set X repetitions = 32
+    set Y repetitions = 32
+    set X periodic = true
+  end
+end
+
+
+# The parameters below this comment were created by the update script
+# as replacement for the old 'Model settings' subsection. They can be
+# safely merged with any existing subsections with the same name.
+
+subsection Boundary velocity model
+  set Prescribed velocity boundary indicators = bottom:function, top:function
+end
+
+subsection Boundary velocity model
+  subsection Function
+    set Function expression = if(t<1, if (y > 0.5, 0.05, 0), 0); \
+                              0
+  end
+end
+
+# Formulation classification
+subsection Formulation
+  set Enable elasticity = true
+end
+
+
+subsection Gravity model
+  set Model name = vertical
+  subsection Vertical
+    set Magnitude = 1
+  end
+end
+
+subsection Compositional fields
+  set Number of fields = 4
+  set Names of fields  = stress_xx, stress_yy, stress_xy, goo
+end
+
+subsection Boundary composition model
+  set List of model names = initial composition
+end
+
+subsection Initial composition model
+  set Model name = function
+  subsection Function
+    set Function expression = 0.0;0.0;0.0;1.0
+  end
+end
+
+############### Material model
+
+
+subsection Material model
+
+  set Model name = viscoelastic plastic
+
+  subsection Viscoelastic Plastic
+    set Densities            =  1,  1,  1,  1,  1
+    set Linear viscosities   = 1.e2, 1.e2, 1.e2, 1.e2, 1.e2
+    set Elastic shear moduli = 1.e2, 1.e2, 1.e2, 1.e2, 1.e2
+    set Fixed elastic time step     = 0.1
+    set Use fixed elastic time step = true
+    set Use stress averaging        = true
+    set Viscosity averaging scheme  = maximum composition
+    set Cohesions = 3.5
+    set Minimum viscosity           = 1e-3
+    set Maximum viscosity           = 1e3
+    set Reference viscosity         = 10
+
+  end
+
+end
+
+
+############### Parameters describing the temperature field
+# Note: The temperature plays no role in this model
+
+subsection Boundary temperature model
+  set List of model names = box
+end
+
+subsection Initial temperature model
+  set Model name = function
+  subsection Function
+    set Function expression = 0
+  end
+end
+
+############### Parameters describing the discretization
+
+#subsection Mesh refinement
+#  set Initial adaptive refinement        = 0
+#  set Strategy                           = strain rate
+#  set Initial global refinement          = 0
+#  set Time steps between mesh refinement = 0
+#end
+
+
+############### Post processing
+subsection Postprocess
+  set List of postprocessors = visualization
+  subsection Visualization
+    set Time between graphical output = 0.1
+    set List of output variables = viscosity, strain rate, strain rate tensor, named additional outputs
+    set Interpolate output = true
+    set Write higher order output = true
+
+  end
+end
